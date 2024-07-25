@@ -8,9 +8,11 @@ This module should:
         versioning pipeline can work
 """
 
+import os
+
 import requests
 
-from utils import logger
+from src import utils
 
 
 def get_data_from_url(url: str, output_path: str = "data.csv") -> bool:
@@ -31,8 +33,15 @@ def get_data_from_url(url: str, output_path: str = "data.csv") -> bool:
         with open(output_path, "wb") as file:
             for chunk in response.iter_content(chunk_size=1024 * 1024):
                 file.write(chunk)
-        logger.info(f"Data downloaded successfully from - {url}")
+        utils.logger.info(f"Data downloaded successfully from - {url}")
         return True
     except requests.RequestException as e:
-        logger.error(f"Error downloading data from - {url}: \n{e}")
+        utils.logger.error(f"Error downloading data from - {url}: \n{e}")
         raise e
+
+
+if __name__ == "__main__":
+    config = utils.load_yaml_config()
+    data_url = os.getenv("DATA_URL", config["data_url"])
+    get_data_from_url(data_url, config["data_split"]["raw_data_save_path"])
+    get_data_from_url(config)

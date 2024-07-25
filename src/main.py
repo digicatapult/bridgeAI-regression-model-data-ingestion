@@ -21,11 +21,16 @@ def main():
     logger.info("Collecting data from source")
     get_data_from_url(data_url, config["data_split"]["raw_data_save_path"])
 
-    # Cleanse the data
+    # 2. Cleanse the data
     clean_data(config)
 
-    # Load and split the cleansed data
+    # 3. Load and split the cleansed data
     split_data(config)
+
+    # TODO: check what is the best way to do it from a DAG
+    # 4. Update dvc and git - automated way
+    # utils.add_to_dvc(config)
+    # utils.commit_to_git(config)
 
 
 if __name__ == "__main__":

@@ -15,5 +15,6 @@ data_split:
                       "airconditioning", "prefarea", "furnishingstatus" ]
   numeric_cols: [ "area", "bedrooms", "bathrooms", "stories", "parking" ]   # numerical column names in the input data
 
-DVC_REMOTE: "/Users/rbaby/Code/mlops/dvc"
-DVC_REMOTE_NAME: "test_remote"
+dvc_remote: "/Users/rbaby/Code/mlops/dvc"   # remote s3 bucket path for dvc to push and store data
+dvc_remote_name: "regression-model-remote"    # a name assigned to the remote
+git_branch: "feature/testing"   # name of the git branch where we want to push the committed data

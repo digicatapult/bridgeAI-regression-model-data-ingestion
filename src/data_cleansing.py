@@ -1,6 +1,8 @@
 import pandas as pd
 from sklearn.impute import SimpleImputer
 
+from src import utils
+
 
 def clean_data(config: dict) -> None:
     """Cleanses the data as a preprocessing step."""
@@ -36,3 +38,13 @@ def clean_data(config: dict) -> None:
 
     # 6. Save the cleansed data
     df.to_csv(config["data_split"]["cleansed_data_save_path"])
+    utils.logger("Data cleansing completed.")
+    utils.logger(
+        f"Cleaned data saved to "
+        f'{config["data_split"]["cleansed_data_save_path"]}'
+    )
+
+
+if __name__ == "__main__":
+    config = utils.load_yaml_config()
+    clean_data(config)
