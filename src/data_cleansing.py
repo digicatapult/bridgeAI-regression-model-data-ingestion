@@ -38,8 +38,8 @@ def clean_data(config: dict) -> None:
 
     # 6. Save the cleansed data
     df.to_csv(config["data_split"]["cleansed_data_save_path"])
-    utils.logger("Data cleansing completed.")
-    utils.logger(
+    utils.logger.info("Data cleansing completed.")
+    utils.logger.info(
         f"Cleaned data saved to "
         f'{config["data_split"]["cleansed_data_save_path"]}'
     )

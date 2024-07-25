@@ -42,7 +42,7 @@ def split_data(config: dict) -> None:
     X_train.to_csv(config["data_split"]["train_data_save_path"], index=False)
     X_val.to_csv(config["data_split"]["val_data_save_path"], index=False)
     X_test.to_csv(config["data_split"]["test_data_save_path"], index=False)
-    utils.logger("Data splitting completed.")
+    utils.logger.info("Data splitting completed.")
 
 
 if __name__ == "__main__":

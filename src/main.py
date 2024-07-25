@@ -18,7 +18,6 @@ def main():
 
     # 1. Gather the data and download it locally
     data_url = os.getenv("DATA_URL", config["data_url"])
-    logger.info("Collecting data from source")
     get_data_from_url(data_url, config["data_split"]["raw_data_save_path"])
 
     # 2. Cleanse the data
