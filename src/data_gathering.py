@@ -44,4 +44,3 @@ if __name__ == "__main__":
     config = utils.load_yaml_config()
     data_url = os.getenv("DATA_URL", config["data_url"])
     get_data_from_url(data_url, config["data_split"]["raw_data_save_path"])
-    get_data_from_url(config)

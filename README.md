@@ -12,6 +12,28 @@ Or you can provide the url in the environment variable `DATA_URL`
 6. Add `./src` to the `PYTHONPATH` - `export PYTHONPATH="${PYTHONPATH}:./src"`
 7. Run `poetry run python src/main.py`
 
+**The below manual steps are needed to add and push the data to dvc and track them via git**\
+#TODO: Automate this in the airflow data ingestion dag
+
+1. `dvc init` from the root of the repo to set the repo as a dvc repo if it is not already done
+2. Add dvc remote
+   ```shell
+   dvc remote add -f <dvc-remote-name> <dvc-remote-path>
+   ```
+3. Add the files that needs to be tracked to dvc 
+   ```shell
+   dvc add artefacts/test_data.csv artefacts/train_data.csv artefacts/val_data.csv
+   ```
+4. Add the dvc files to git
+   ```shell
+   git add artefacts/test_data.csv.dvc artefacts/train_data.csv.dvc artefacts/val_data.csv.dvc
+   ```
+5. Push the data to dvc remote
+   ```shell
+   dvc push -r <dvc-remote-name>
+   ```
+6. Git push and tag the repo with version of data for future use 
+
 
 ### Data ingestion and versioning - using docker
 1. Build the docker image - `docker build -t data-ingestion .`

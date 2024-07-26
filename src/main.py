@@ -11,9 +11,8 @@ from src.utils import logger
 
 def main():
     """Main Data versioning and ingestion pipeline."""
-    config_path = "./config.yaml"
 
-    config = utils.load_yaml_config(config_path)
+    config = utils.load_yaml_config()
     logger.info("Data Ingestion Config", extra=config)
 
     # 1. Gather the data and download it locally
