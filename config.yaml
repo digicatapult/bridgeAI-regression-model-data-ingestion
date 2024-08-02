@@ -1,6 +1,5 @@
 data_url: "https://raw.githubusercontent.com/renjith-digicat/random_file_shares/main/HousingData.csv"   # URL from where we can download the data
 
-
 data_split:
   raw_data_save_path: "./artefacts/raw_data.csv"    # the filename for raw downloaded data
   cleansed_data_save_path: "./artefacts/cleansed_data.csv"    # the filename for cleansed data
@@ -15,6 +14,9 @@ data_split:
                       "airconditioning", "prefarea", "furnishingstatus" ]
   numeric_cols: [ "area", "bedrooms", "bathrooms", "stories", "parking" ]   # numerical column names in the input data
 
-dvc_remote: "/Users/rbaby/Code/mlops/dvc"   # remote s3 bucket path for dvc to push and store data
+dvc_remote: "./artefacts"   # remote s3 bucket path for dvc to push and store data
 dvc_remote_name: "regression-model-remote"    # a name assigned to the remote
+git_repo_url: "https://github.com/digicatapult/bridgeAI-regression-model-data-ingestion.git"    # data ingestion repo url
+git_repo_save_name: "local_repo"  # the directory name where the repo will be cloned to - needed this to be constant with what the data ingestion dag is accessing
 git_branch: "feature/testing"   # name of the git branch where we want to push the committed data
+commit_message: "update dvc data"   # git commit message

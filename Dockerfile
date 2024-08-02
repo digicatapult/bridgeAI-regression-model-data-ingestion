@@ -5,6 +5,7 @@ FROM python:3.12-slim
 RUN apt-get update &&  \
     apt-get install -y --fix-missing build-essential && \
     pip install --no-cache-dir poetry && \
+    apt-get install -y git && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Set the working directory in the container
