@@ -44,6 +44,7 @@ def dvc_add_files(config):
 
 
 def dvc_push(config):
+    """DVC push."""
     try:
         dvc_main(["push", "-r", config["dvc_remote_name"]])
     except Exception as e:
@@ -83,7 +84,7 @@ def git_add_files(repo, config):
 
 
 def git_commit(repo, config):
-    """Git commit the changes."""
+    """Git commit with message."""
     try:
         repo.index.commit(config["commit_message"])
     except Exception as e:
@@ -118,11 +119,9 @@ def git_push(repo, config):
 
 
 def copy_directory(src, dst):
-    # Ensure the destination directory exists
+    """Copy source directory to destination directory."""
     if not os.path.exists(dst):
         os.makedirs(dst)
-
-    # Copy the directory and its contents, including hidden files
     try:
         shutil.copytree(src, dst, dirs_exist_ok=True)
         logger.info(f"Directory copied from {src} to {dst} successfully.")
@@ -177,8 +176,8 @@ def push_data(config):
     copy_directory(repo_temp_path, config["git_repo_save_name"])
     os.chdir(config["git_repo_save_name"])
 
+    # 2. Initialise git and dvc
     repo = Repo("./")
-
     assert not repo.bare
 
     # TODO: ensure we have proper dvc remote
@@ -186,13 +185,13 @@ def push_data(config):
         ["init"],
     )
 
-    # 1. DVC operations
+    # 3. DVC operations
     dvc_remote_add(config)
     logger.warning(f"list dir form ./artefacts': {os.listdir('./artefacts')}")
     dvc_add_files(config)
     dvc_push(config)
 
-    # 2. Git operations:
+    # 4. Git operations:
     # Create a branch if it doesn't exist and switch to it
     create_and_switch_branch(repo, config)
 
