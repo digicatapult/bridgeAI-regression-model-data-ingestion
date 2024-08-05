@@ -154,7 +154,21 @@ def get_authenticated_github_url(base_url):
 
 def checkout_branch(repo_dir, branch_name):
     """Git checkout."""
-    Repo(repo_dir).git.checkout(branch_name)
+    repo = Repo(repo_dir)
+
+    # Check if the branch exists
+    try:
+        repo.git.rev_parse("--verify", f"refs/heads/{branch_name}")
+        branch_exists = True
+    except GitCommandError:
+        branch_exists = False
+
+    # Create the branch if it doesn't exist
+    if not branch_exists:
+        repo.git.checkout("-b", branch_name)
+    else:
+        repo.git.checkout(branch_name)
+    return branch_exists
 
 
 def pull_updates(repo_dir):
@@ -170,8 +184,9 @@ def push_data(config):
     )
     repo_temp_path = "./repo"
     Repo.clone_from(authenticated_git_url, repo_temp_path)
-    checkout_branch(repo_temp_path, config["git_branch"])
-    pull_updates(repo_temp_path)
+    branch_exists = checkout_branch(repo_temp_path, config["git_branch"])
+    if branch_exists:
+        pull_updates(repo_temp_path)
 
     copy_directory(repo_temp_path, config["git_repo_save_name"])
     os.chdir(config["git_repo_save_name"])
