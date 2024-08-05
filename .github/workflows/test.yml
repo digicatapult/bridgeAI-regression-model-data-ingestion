@@ -50,10 +50,6 @@ jobs:
         with:
           python-version: "3.12"
           cache: poetry
-      - name: Install Git
-        run: sudo apt-get update && sudo apt-get install -y git
-      - name: Install DVC
-        run: poetry run pip install dvc
       - name: Install Packages
         run: poetry install --no-interaction --no-ansi
       - name: Run Integration Tests
