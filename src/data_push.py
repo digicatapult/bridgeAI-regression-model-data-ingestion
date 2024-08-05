@@ -98,16 +98,16 @@ def get_latest_tag(repo):
         tags = sorted(repo.tags, key=lambda t: t.commit.committed_datetime)
         if tags:
             latest_tag = tags[-1].name
-            match = re.match(r"v(\d+)\.(\d+)\.(\d+)", latest_tag)
+            match = re.match(r"data-v(\d+)\.(\d+)\.(\d+)", latest_tag)
             if match:
                 major, minor, patch = map(int, match.groups())
-                new_tag = f"v{major}.{minor + 1}.{patch}"
+                new_tag = f"data-v{major}.{minor + 1}.{patch}"
                 return new_tag
     except Exception as e:
         logger.error(f"Tag increment failed with error: {e}")
         raise e
-    # if no tag, then tag it as 1.0.0
-    return "v1.0.0"
+    # if no tag, then tag it as data-1.0.0
+    return "data-v1.0.0"
 
 
 def git_push(repo, config):
@@ -124,6 +124,7 @@ def copy_directory(src, dst):
         os.makedirs(dst)
     try:
         shutil.copytree(src, dst, dirs_exist_ok=True)
+        shutil.rmtree(src)
         logger.info(f"Directory copied from {src} to {dst} successfully.")
     except Exception as e:
         logger.error(f"Error copying directory: {e}")
