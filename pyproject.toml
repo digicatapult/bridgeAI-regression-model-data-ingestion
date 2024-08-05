@@ -1,0 +1,34 @@
+[tool.poetry]
+name = "bridgeai-regression-model-data-ingestion"
+version = "0.1.0"
+description = "Data ingestion module for the house price regression model"
+authors = ["DC AI Team <opensource@digicatapult.org.uk>"]
+readme = "README.md"
+package-mode = false
+
+[tool.poetry.dependencies]
+python = "^3.12"
+pytest = "^8.3.1"
+setuptools = "^71.1.0"
+requests = "^2.32.3"
+pandas = "^2.2.2"
+pyyaml = "^6.0.1"
+python-json-logger = "^2.0.7"
+scikit-learn = "^1.5.1"
+dvc = "^3.52.0"
+gitpython = "^3.1.43"
+
+[tool.poetry.group.dev.dependencies]
+black = "^24.4.2"
+flake8 = "^7.1.0"
+isort = "^5.13.2"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.black]
+line-length = 79
+
+[tool.flake8]
+max-line-length = 79
