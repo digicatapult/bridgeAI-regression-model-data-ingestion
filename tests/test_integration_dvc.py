@@ -31,7 +31,7 @@ def test_push_data_dvc(setup_and_teardown):
         f.write("data")
     subprocess.run(["dvc", "add", "data.txt"], check=True)
     # setup a local remote
-    subprocess.run(
+    dvc_add_result = subprocess.run(
         [
             "dvc",
             "remote",
@@ -42,6 +42,9 @@ def test_push_data_dvc(setup_and_teardown):
         ]
     )
     # test a dvc push to remote
-    subprocess.run(
+    dvc_push_result = subprocess.run(
         ["dvc", "push", "-r", config["dvc_remote_name"]], check=True
     )
+
+    assert dvc_add_result.returncode == 0
+    assert dvc_push_result.returncode == 0
