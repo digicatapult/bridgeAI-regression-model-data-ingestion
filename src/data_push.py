@@ -156,19 +156,21 @@ def get_authenticated_github_url(base_url):
 def checkout_branch(repo_dir, branch_name):
     """Git checkout."""
     repo = Repo(repo_dir)
+    repo.git.fetch()
 
     # Check if the branch exists
     try:
-        repo.git.rev_parse("--verify", f"refs/heads/{branch_name}")
+        repo.git.rev_parse("--verify", f"refs/remotes/origin/{branch_name}")
         branch_exists = True
     except GitCommandError:
         branch_exists = False
 
     # Create the branch if it doesn't exist
-    if not branch_exists:
-        repo.git.checkout("-b", branch_name)
-    else:
+    if branch_exists:
         repo.git.checkout(branch_name)
+    else:
+        repo.git.checkout("-b", branch_name)
+
     return branch_exists
 
 
@@ -203,7 +205,6 @@ def push_data(config):
 
     # 3. DVC operations
     dvc_remote_add(config)
-    logger.warning(f"list dir form ./artefacts': {os.listdir('./artefacts')}")
     dvc_add_files(config)
     dvc_push(config)
 
