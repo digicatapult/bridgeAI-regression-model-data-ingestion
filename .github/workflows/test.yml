@@ -66,6 +66,7 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           package_manager: "poetry"
+          tag_regex: "^v?\\d+\\.\\d+\\.\\d+$"
 
   build-docker:
     name: "Build docker image"
