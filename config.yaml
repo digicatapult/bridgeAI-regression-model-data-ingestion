@@ -14,8 +14,10 @@ data_split:
                       "airconditioning", "prefarea", "furnishingstatus" ]
   numeric_cols: [ "area", "bedrooms", "bathrooms", "stories", "parking" ]   # numerical column names in the input data
 
-dvc_remote: "./artefacts"   # remote s3 bucket path for dvc to push and store data
+dvc_remote: "s3://artifacts"   # remote s3 bucket path for dvc to push and store data
 dvc_remote_name: "regression-model-remote"    # a name assigned to the remote
+dvc_endpoint_url: "http://minio"  # dvc endpoint url
+dvc_region: "us-east-1"
 git_repo_url: "https://github.com/digicatapult/bridgeAI-regression-model-data-ingestion.git"    # data ingestion repo url
 git_repo_save_name: "local_repo"  # the directory name where the repo will be cloned to - needed this to be constant with what the data ingestion dag is accessing
 git_branch: "feature/testing"   # name of the git branch where we want to push the committed data
