@@ -14,6 +14,9 @@ from src.utils import logger
 
 def dvc_remote_add(config):
     """Set the dvc remote."""
+    access_key_id = os.getenv("DVC_ACCESS_KEY_ID")
+    secret_access_key = os.getenv("DVC_SECRET_ACCESS_KEY")
+    region = config["dvc_region"]
     try:
         dvc_remote_name = os.getenv(
             "DVC_REMOTE_NAME", config["dvc_remote_name"]
@@ -21,6 +24,35 @@ def dvc_remote_add(config):
         dvc_remote = os.getenv("DVC_REMOTE", config["dvc_remote"])
 
         dvc_main(["remote", "add", "-f", dvc_remote_name, dvc_remote])
+        dvc_main(
+            [
+                "remote",
+                "modify",
+                dvc_remote_name,
+                "endpointurl",
+                config["dvc_endpoint_url"],
+            ]
+        )
+        dvc_main(
+            [
+                "remote",
+                "modify",
+                dvc_remote_name,
+                "access_key_id",
+                access_key_id,
+            ]
+        )
+        dvc_main(
+            [
+                "remote",
+                "modify",
+                dvc_remote_name,
+                "secret_access_key",
+                secret_access_key,
+            ]
+        )
+        # Minio does not enforce regions but DVC requires it
+        dvc_main(["remote", "modify", dvc_remote_name, "region", region])
     except Exception as e:
         logger.error(f"DVC remote add failed with error: {e}")
         raise e
@@ -78,6 +110,8 @@ def git_add_files(repo, config):
         )
         repo.index.add(add_suffix(config["data_split"]["val_data_save_path"]))
         repo.index.add(add_suffix(config["data_split"]["test_data_save_path"]))
+        # Add the dvc config as well
+        repo.index.add(".dvc/config")
     except Exception as e:
         logger.error(f"Git add failed with error: {e}")
         raise e
@@ -98,16 +132,16 @@ def get_latest_tag(repo):
         tags = sorted(repo.tags, key=lambda t: t.commit.committed_datetime)
         if tags:
             latest_tag = tags[-1].name
-            match = re.match(r"v(\d+)\.(\d+)\.(\d+)", latest_tag)
+            match = re.match(r"data-v(\d+)\.(\d+)\.(\d+)", latest_tag)
             if match:
                 major, minor, patch = map(int, match.groups())
-                new_tag = f"v{major}.{minor + 1}.{patch}"
+                new_tag = f"data-v{major}.{minor + 1}.{patch}"
                 return new_tag
     except Exception as e:
         logger.error(f"Tag increment failed with error: {e}")
         raise e
-    # if no tag, then tag it as 1.0.0
-    return "v1.0.0"
+    # if no tag, then tag it as data-1.0.0
+    return "data-v1.0.0"
 
 
 def git_push(repo, config):
@@ -124,6 +158,7 @@ def copy_directory(src, dst):
         os.makedirs(dst)
     try:
         shutil.copytree(src, dst, dirs_exist_ok=True)
+        shutil.rmtree(src)
         logger.info(f"Directory copied from {src} to {dst} successfully.")
     except Exception as e:
         logger.error(f"Error copying directory: {e}")
@@ -154,7 +189,23 @@ def get_authenticated_github_url(base_url):
 
 def checkout_branch(repo_dir, branch_name):
     """Git checkout."""
-    Repo(repo_dir).git.checkout(branch_name)
+    repo = Repo(repo_dir)
+    repo.git.fetch()
+
+    # Check if the branch exists
+    try:
+        repo.git.rev_parse("--verify", f"refs/remotes/origin/{branch_name}")
+        branch_exists = True
+    except GitCommandError:
+        branch_exists = False
+
+    # Create the branch if it doesn't exist
+    if branch_exists:
+        repo.git.checkout(branch_name)
+    else:
+        repo.git.checkout("-b", branch_name)
+
+    return branch_exists
 
 
 def pull_updates(repo_dir):
@@ -170,8 +221,9 @@ def push_data(config):
     )
     repo_temp_path = "./repo"
     Repo.clone_from(authenticated_git_url, repo_temp_path)
-    checkout_branch(repo_temp_path, config["git_branch"])
-    pull_updates(repo_temp_path)
+    branch_exists = checkout_branch(repo_temp_path, config["git_branch"])
+    if branch_exists:
+        pull_updates(repo_temp_path)
 
     copy_directory(repo_temp_path, config["git_repo_save_name"])
     os.chdir(config["git_repo_save_name"])
@@ -181,15 +233,18 @@ def push_data(config):
     assert not repo.bare
 
     # TODO: ensure we have proper dvc remote
-    dvc_main(
-        ["init"],
-    )
+    # dvc_main(
+    #     ["init"],
+    # )
 
     # 3. DVC operations
+    logger.warning("STARTING DVC REMOTE ADD")
     dvc_remote_add(config)
-    logger.warning(f"list dir form ./artefacts': {os.listdir('./artefacts')}")
+    logger.warning("STARTING DVC ADD")
     dvc_add_files(config)
+    logger.warning("STARTING DVC PUSH")
     dvc_push(config)
+    logger.warning("ENDED DVC PUSH")
 
     # 4. Git operations:
     # Create a branch if it doesn't exist and switch to it

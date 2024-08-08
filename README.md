@@ -12,7 +12,7 @@ Or you can provide the url in the environment variable `DATA_URL`
 6. Add `./src` to the `PYTHONPATH` - `export PYTHONPATH="${PYTHONPATH}:./src"`
 7. Run `poetry run python src/main.py`
 
-**The below manual steps are needed to add and push the data to dvc and track them via git**\
+**The below manual steps are automated using the data ingestion dag in the [DAGs repo](https://github.com/digicatapult/bridgeAI-airflow-DAGs) **\
 
 
 1. `dvc init` from the root of the repo to set the repo as a dvc repo if it is not already done
@@ -42,18 +42,30 @@ Or you can provide the url in the environment variable `DATA_URL`
    (Refer to the following [Environment Variables](#environment-variables) table for complete list)\
    `docker run -e DVC_REMOTE=s3:some/remote -e DATA_URL=https://raw.githubusercontent.com/renjith-digicat/random_file_shares/main/HousingData.csv --rm data-ingestion`
 
+### Data ingestion and versioning - using Airflow DAG (Recommended method)
+1. Set up the kubernetes cluster and infrastructure required using [Infrastructure repo](https://github.com/digicatapult/bridgeAI-gitops-infra)
+2. Access the airflow UI made available using the above infra repo
+3. Update the airflow variables accordingly
+4. Trigger the `data_ingestion_dag`
+
+Once the DAG execution completed, the data ingestion repo will be updated with a new data version in the specified branch of the repo.
 
 ### Environment Variables
 
 The following environment variables can be set to configure the training:
 
-| Variable        | Default Value                                                                                | Description                                                                                                  |
-|-----------------|----------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------|
-| DATA_URL        | `https://raw.githubusercontent.com/renjith-digicat/random_file_shares/main/HousingData.csv ` | Url to the raw data CSV data used for training                                                               |
-| CONFIG_PATH     | `./config.yaml`                                                                              | File path to the data cleansing, versioning and other configuration file                                     |
-| LOG_LEVEL       | `INFO`                                                                                       | The logging level for the application. Valid values are `DEBUG`, `INFO`, `WARNING`, `ERROR`, and `CRITICAL`. |
-| DVC_REMOTE      | `/tmp/test-dvc-remote`                                                                       | A DVC remote path                                                                                            |
-| DVC_REMOTE_NAME | `regression-model-remote`                                                                    | The name for the dvc remote                                                                                  |
+| Variable               | Default Value                                                                                | Description                                                                                                               |
+|------------------------|----------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------|
+| DATA_URL               | `https://raw.githubusercontent.com/renjith-digicat/random_file_shares/main/HousingData.csv ` | Url to the raw data CSV data used for training                                                                            |
+| CONFIG_PATH            | `./config.yaml`                                                                              | File path to the data cleansing, versioning and other configuration file                                                  |
+| LOG_LEVEL              | `INFO`                                                                                       | The logging level for the application. Valid values are `DEBUG`, `INFO`, `WARNING`, `ERROR`, and `CRITICAL`.              |
+| DVC_REMOTE             | `/tmp/test-dvc-remote`                                                                       | A DVC remote path                                                                                                         |
+| DVC_REMOTE_NAME        | `regression-model-remote`                                                                    | The name for the dvc remote                                                                                               |
+| DVC_ACCESS_KEY_ID      | None                                                                                         | The access key id for dvc remote endpoint url (default value is embedded in the infra repo)                               |
+| DVC_SECRET_ACCESS_KEY  | None                                                                                         | The secret access key for dvc remote endpoint url (default value is embedded in the infra repo)                           |
+| GITHUB_USERNAME        | None                                                                                         | Github username using which new data version files will be pushed to github (default value is embedded in the infra repo) |
+| GITHUB_PASSWORD        | None                                                                                         | Github token for the above username (default value is embedded in the infra repo)                                         |
+
 
 
 ### Running the tests

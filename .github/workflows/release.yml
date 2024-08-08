@@ -79,6 +79,7 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           package_manager: "poetry"
+          tag_regex: "^v?\\d+\\.\\d+\\.\\d+$"
 
   publish:
     name: "Publish package"
