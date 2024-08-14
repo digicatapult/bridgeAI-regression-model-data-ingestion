@@ -1,0 +1,6 @@
+['remote "regression-model-remote"']
+    url = s3://artifacts
+    endpointurl = http://minio
+    access_key_id = admin
+    secret_access_key = password
+    region = us-east-1
