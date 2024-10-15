@@ -1,6 +1,6 @@
 ['remote "regression-model-remote"']
-    url = s3://artifacts
+    url = s3://bridgeai-dvc-remote
     endpointurl = http://minio
     access_key_id = admin
     secret_access_key = password
-    region = us-east-1
+    region = eu-west-2
