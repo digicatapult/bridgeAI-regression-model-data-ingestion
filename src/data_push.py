@@ -22,9 +22,6 @@ def dvc_remote_add(config):
             "DVC_REMOTE_NAME", config["dvc_remote_name"]
         )
         dvc_remote = os.getenv("DVC_REMOTE", config["dvc_remote"])
-        dvc_endpoint_url = os.getenv(
-            "DVC_ENDPOINT_URL", config["dvc_endpoint_url"]
-        )
 
         dvc_main(["remote", "add", "-f", dvc_remote_name, dvc_remote])
         dvc_main(
