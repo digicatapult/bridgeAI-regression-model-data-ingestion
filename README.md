@@ -12,7 +12,7 @@ Or you can provide the url in the environment variable `DATA_URL`
 6. Add `./src` to the `PYTHONPATH` - `export PYTHONPATH="${PYTHONPATH}:./src"`
 7. Run `poetry run python src/main.py`
 
-**The below manual steps are automated using the data ingestion dag in the [DAGs repo](https://github.com/digicatapult/bridgeAI-airflow-DAGs) **\
+**The below manual steps are automated using the data ingestion dag in the [DAGs repo](https://github.com/digicatapult/bridgeAI-airflow-DAGs)**
 
 
 1. `dvc init` from the root of the repo to set the repo as a dvc repo if it is not already done
