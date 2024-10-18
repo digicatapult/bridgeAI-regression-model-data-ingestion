@@ -37,8 +37,7 @@ Or you can provide the url in the environment variable `DATA_URL`
 
 ### Data ingestion and versioning - using docker
 1. Build the docker image - `docker build -t data-ingestion .`
-2. Bring up the dependencies by using `docker-compose up -d`
-3. Run the container with the correct `DATA_URL` and `DVC_REMOTE` as environment variables.
+2. Run the container with the correct `DATA_URL` and `DVC_REMOTE` as environment variables.
    (Refer to the following [Environment Variables](#environment-variables) table for complete list)\
    `docker run -e DVC_REMOTE=s3:some/remote -e DATA_URL=https://raw.githubusercontent.com/renjith-digicat/random_file_shares/main/HousingData.csv --rm data-ingestion`
 
