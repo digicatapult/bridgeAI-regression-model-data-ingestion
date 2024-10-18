@@ -12,7 +12,7 @@ Or you can provide the url in the environment variable `DATA_URL`
 6. Add `./src` to the `PYTHONPATH` - `export PYTHONPATH="${PYTHONPATH}:./src"`
 7. Run `poetry run python src/main.py`
 
-**The below manual steps are automated using the data ingestion dag in the [DAGs repo](https://github.com/digicatapult/bridgeAI-airflow-DAGs) **\
+**The below manual steps are automated using the data ingestion dag in the [DAGs repo](https://github.com/digicatapult/bridgeAI-airflow-DAGs)**
 
 
 1. `dvc init` from the root of the repo to set the repo as a dvc repo if it is not already done
@@ -37,8 +37,7 @@ Or you can provide the url in the environment variable `DATA_URL`
 
 ### Data ingestion and versioning - using docker
 1. Build the docker image - `docker build -t data-ingestion .`
-2. Bring up the dependencies by using `docker-compose up -d`
-3. Run the container with the correct `DATA_URL` and `DVC_REMOTE` as environment variables.
+2. Run the container with the correct `DATA_URL` and `DVC_REMOTE` as environment variables.
    (Refer to the following [Environment Variables](#environment-variables) table for complete list)\
    `docker run -e DVC_REMOTE=s3:some/remote -e DATA_URL=https://raw.githubusercontent.com/renjith-digicat/random_file_shares/main/HousingData.csv --rm data-ingestion`
 
