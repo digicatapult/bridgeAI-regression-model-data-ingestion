@@ -132,7 +132,14 @@ def git_commit(repo, config):
 def get_latest_tag(repo):
     """Get the latest tag and increment the minor version by 1."""
     try:
-        tags = sorted(repo.tags, key=lambda t: t.commit.committed_datetime)
+        # Get only the data tags
+        tags = [
+            tag
+            for tag in repo.tags
+            if re.match(r"data-v(\d+)\.(\d+)\.(\d+)", tag.name)
+        ]
+        # Sort the filtered data tags by commit date
+        tags = sorted(tags, key=lambda t: t.commit.committed_datetime)
         if tags:
             latest_tag = tags[-1].name
             match = re.match(r"data-v(\d+)\.(\d+)\.(\d+)", latest_tag)
