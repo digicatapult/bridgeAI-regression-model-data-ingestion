@@ -16,7 +16,7 @@ def dvc_remote_add(config):
     """Set the dvc remote."""
     access_key_id = os.getenv("DVC_ACCESS_KEY_ID")
     secret_access_key = os.getenv("DVC_SECRET_ACCESS_KEY")
-    region = config["dvc_region"]
+    region = os.getenv("AWS_DEFAULT_REGION")
     try:
         dvc_remote_name = os.getenv(
             "DVC_REMOTE_NAME", config["dvc_remote_name"]
@@ -36,24 +36,32 @@ def dvc_remote_add(config):
                 dvc_endpoint_url,
             ]
         )
-        dvc_main(
-            [
-                "remote",
-                "modify",
-                dvc_remote_name,
-                "access_key_id",
-                access_key_id,
-            ]
-        )
-        dvc_main(
-            [
-                "remote",
-                "modify",
-                dvc_remote_name,
-                "secret_access_key",
-                secret_access_key,
-            ]
-        )
+        if secret_access_key is None:
+            # Set dvc remote credentials
+            # only when a valid secret access key is present
+            logger.warning(
+                "AWS credentials `dvc_secret_access_key` is missing "
+                "in the Airflow connection."
+            )
+        else:
+            dvc_main(
+                [
+                    "remote",
+                    "modify",
+                    dvc_remote_name,
+                    "access_key_id",
+                    access_key_id,
+                ]
+            )
+            dvc_main(
+                [
+                    "remote",
+                    "modify",
+                    dvc_remote_name,
+                    "secret_access_key",
+                    secret_access_key,
+                ]
+            )
         # Minio does not enforce regions but DVC requires it
         dvc_main(["remote", "modify", dvc_remote_name, "region", region])
     except Exception as e:
