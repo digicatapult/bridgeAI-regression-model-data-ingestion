@@ -36,7 +36,7 @@ def dvc_remote_add(config):
                 dvc_endpoint_url,
             ]
         )
-        if secret_access_key is None:
+        if secret_access_key is None or secret_access_key == "":
             # Set dvc remote credentials
             # only when a valid secret access key is present
             logger.warning(
