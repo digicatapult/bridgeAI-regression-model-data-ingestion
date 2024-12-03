@@ -37,7 +37,8 @@ def dvc_remote_add(config):
             ]
         )
         if secret_access_key is None:
-            # Set dvc credentials only when a valid secret access key is set
+            # Set dvc remote credentials
+            # only when a valid secret access key is present
             logger.warning(
                 "AWS credentials `dvc_secret_access_key` is missing "
                 "in the Airflow connection."
