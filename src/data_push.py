@@ -16,7 +16,7 @@ def dvc_remote_add(config):
     """Set the dvc remote."""
     access_key_id = os.getenv("DVC_ACCESS_KEY_ID")
     secret_access_key = os.getenv("DVC_SECRET_ACCESS_KEY")
-    region = config["dvc_region"]
+    region = os.getenv("DVC_REMOTE_REGION")
     try:
         dvc_remote_name = os.getenv(
             "DVC_REMOTE_NAME", config["dvc_remote_name"]
