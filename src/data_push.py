@@ -138,7 +138,11 @@ def git_commit(repo, config):
 
 
 def get_latest_tag(repo):
-    """Get the latest tag and increment the minor version by 1."""
+    """Get the new git data tag to be used.
+
+    This is done by getting the existing latest data tag and then
+    incrementing the minor version by 1.
+    """
     try:
         # Get only the data tags
         tags = [
@@ -149,25 +153,91 @@ def get_latest_tag(repo):
         # Sort the filtered data tags by commit date
         tags = sorted(tags, key=lambda t: t.commit.committed_datetime)
         if tags:
-            latest_tag = tags[-1].name
-            match = re.match(r"data-v(\d+)\.(\d+)\.(\d+)", latest_tag)
+            latest_tag = tags[-1]
+            latest_tag_name = latest_tag.name
+            last_commit = latest_tag.commit
+
+            # Increment the minor version
+            match = re.match(r"data-v(\d+)\.(\d+)\.(\d+)", latest_tag_name)
             if match:
                 major, minor, patch = map(int, match.groups())
                 new_tag = f"data-v{major}.{minor + 1}.{patch}"
-                return new_tag
+                return {
+                    "new_tag": new_tag,
+                    "latest_commit": last_commit,
+                }
+        # If no tag exists, initialize the versioning
+        return {
+            "new_tag": "data-v1.0.0",
+            "latest_commit": None,
+        }
     except Exception as e:
         logger.error(f"Tag increment failed with error: {e}")
         raise e
-    # if no tag, then tag it as data-1.0.0
-    return "data-v1.0.0"
 
 
 def git_push(repo, config):
-    """Git push the commit and tag."""
-    repo.git.push("origin", config["git_branch"])
-    latest_tag = get_latest_tag(repo)
-    repo.create_tag(latest_tag)
-    repo.git.push("origin", latest_tag)
+    """Git push the commit and tag, adding 'previous' and 'latest' tags."""
+    # Additional rolling tags used for
+    # automated model training and drift monitoring
+    prev_tag = "data-previous"
+    latest_tag = "data-latest"
+    try:
+        # Push the branch first
+        repo.git.push("origin", config["git_branch"])
+
+        # Get tagging information
+        tag_info = get_latest_tag(repo)
+        new_tag = tag_info["new_tag"]
+        latest_commit = tag_info["latest_commit"]
+
+        # add prev_tag
+        if latest_commit:
+            if prev_tag in [tag.name for tag in repo.tags]:
+                try:
+                    # Delete the existing prev_tag
+                    repo.delete_tag(prev_tag)
+                except Exception as e:
+                    logger.info(f"Error deleting local tag {prev_tag}: {e}")
+                # Remove remote prev_tag
+                repo.git.push("--delete", "origin", prev_tag)
+            repo.create_tag(prev_tag, ref=latest_commit)
+            logger.info(
+                f"Added {prev_tag} tag to commit: {latest_commit.hexsha}"
+            )
+            repo.git.push("origin", prev_tag)
+            logger.warning(
+                f"New tag {prev_tag} already exists on "
+                f"previous commit:{latest_commit.hexsha}!!!"
+            )
+
+        # Add latest_tag
+        if new_tag not in [tag.name for tag in repo.tags]:
+            repo.create_tag(new_tag)
+            logger.info(f"Added new version tag: {new_tag}")
+            repo.git.push("origin", new_tag)
+        else:
+            logger.info(f"Tag {new_tag} already exists, skipping creation.")
+
+        # Update latest_tag to the current HEAD
+        if latest_tag in [tag.name for tag in repo.tags]:
+            try:
+                # Delete the existing latest_tag
+                repo.delete_tag(latest_tag)
+            except Exception as e:
+                logger.info(f"Error deleting local tag {latest_tag}: {e}")
+                # Remove remote latest_tag
+            repo.git.push("--delete", "origin", latest_tag)
+
+        repo.create_tag(latest_tag, ref=repo.commit())
+        logger.info(
+            f"Added {latest_tag} tag to commit: {repo.commit().hexsha}"
+        )
+        repo.git.push("origin", latest_tag)
+
+    except Exception as e:
+        logger.error(f"Git push failed with error: {e}")
+        raise e
 
 
 def copy_directory(src, dst):
