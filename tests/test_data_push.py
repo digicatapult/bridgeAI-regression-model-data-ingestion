@@ -1,8 +1,8 @@
 """Unit test for data push."""
 
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock, PropertyMock, patch
 
-from src.data_push import get_latest_tag, push_data
+from src.data_push import get_latest_tag, git_push, push_data
 
 
 @patch("src.data_push.get_authenticated_github_url")
@@ -72,7 +72,7 @@ def test_no_tags():
     repo = MagicMock()
     repo.tags = []
     result = get_latest_tag(repo)
-    assert result == "data-v1.0.0"
+    assert result["new_tag"] == "data-v1.0.0"
 
 
 def test_valid_data_v_tag():
@@ -91,7 +91,7 @@ def test_valid_data_v_tag():
     repo.tags = [tag]
 
     result = get_latest_tag(repo)
-    assert result == "data-v1.3.0"
+    assert result["new_tag"] == "data-v1.3.0"
 
 
 def test_multiple_data_v_tags():
@@ -114,7 +114,7 @@ def test_multiple_data_v_tags():
     repo.tags = [tag1, tag2]
 
     result = get_latest_tag(repo)
-    assert result == "data-v1.3.0"
+    assert result["new_tag"] == "data-v1.3.0"
 
 
 def test_non_data_v_tags():
@@ -136,7 +136,7 @@ def test_non_data_v_tags():
     repo.tags = [tag1, tag2]
 
     result = get_latest_tag(repo)
-    assert result == "data-v1.1.0"
+    assert result["new_tag"] == "data-v1.1.0"
 
 
 def test_empty_data_v_tag():
@@ -157,4 +157,118 @@ def test_empty_data_v_tag():
     repo.tags = [tag1, tag2]
 
     result = get_latest_tag(repo)
-    assert result == "data-v1.0.0"
+    assert result["new_tag"] == "data-v1.0.0"
+
+
+def test_add_previous_tag():
+    """Test adding the data-previous tag when a valid latest commit exists."""
+    repo = MagicMock()
+
+    # Create mock tags and commits
+    latest_commit = MagicMock()
+    latest_commit.hexsha = "abcd1234"
+    latest_commit.committed_datetime = "2025-01-01"
+
+    # Mock a previous tag with a commit
+    prev_tag = MagicMock()
+    prev_tag.name = "data-v1.0.0"
+    prev_tag.commit = latest_commit
+
+    # Set up repo.tags to include the previous tag
+    type(repo).tags = PropertyMock(return_value=[prev_tag])
+
+    # Ensure repo.commit() returns the latest commit
+    repo.commit = MagicMock(return_value=latest_commit)
+
+    # Mock create_tag and push methods
+    repo.create_tag = MagicMock()
+    repo.delete_tag = MagicMock()
+    repo.git.push = MagicMock()
+
+    # Call the function under test
+    config = {"git_branch": "main"}
+    git_push(repo, config)
+
+    # Verify 'data-previous' was created on the correct commit
+    repo.create_tag.assert_any_call("data-previous", ref=latest_commit)
+    repo.git.push.assert_any_call("origin", "data-previous")
+
+
+def test_add_latest_tag():
+    """Test adding the 'data-latest' tag to the current HEAD."""
+    repo = MagicMock()
+
+    # Mock tags and the current commit
+    current_commit = MagicMock()
+    current_commit.hexsha = "abcd5678"
+    repo.commit.return_value = current_commit
+
+    repo.tags = []
+    repo.create_tag = MagicMock()
+    repo.git.push = MagicMock()
+
+    # Call the function to create and push tags
+    config = {"git_branch": "main"}
+    git_push(repo, config)
+
+    # Check that 'data-latest' tag was created
+    repo.create_tag.assert_any_call("data-latest", ref=current_commit)
+    repo.git.push.assert_any_call("origin", "data-latest")
+
+
+def test_update_existing_latest_tag():
+    """Test updating the 'data-latest' tag if it already exists."""
+    repo = MagicMock()
+
+    # Mock an existing 'data-latest' tag
+    existing_latest_tag = MagicMock()
+    existing_latest_tag.name = "data-latest"
+    repo.tags = [existing_latest_tag]
+
+    # Mock the current commit
+    current_commit = MagicMock()
+    current_commit.hexsha = "abcd5678"
+    repo.commit.return_value = current_commit
+
+    repo.create_tag = MagicMock()
+    repo.delete_tag = MagicMock()
+    repo.git.push = MagicMock()
+
+    # Call the function to create and push tags
+    config = {"git_branch": "main"}
+    git_push(repo, config)
+
+    # Ensure the existing 'data-latest' tag is deleted and recreated
+    repo.delete_tag.assert_called_once_with("data-latest")
+    repo.create_tag.assert_any_call("data-latest", ref=current_commit)
+    repo.git.push.assert_any_call("--delete", "origin", "data-latest")
+    repo.git.push.assert_any_call("origin", "data-latest")
+
+
+def test_no_previous_commit():
+    """Test when there is no previous commit to tag."""
+    repo = MagicMock()
+
+    # No tags exist, and latest_commit is None
+    repo.tags = []
+    # Mock the current commit
+    current_commit = MagicMock()
+    current_commit.hexsha = "abcd5678"
+    repo.commit.return_value = current_commit
+
+    # Mock methods
+    repo.create_tag = MagicMock()
+    repo.git.push = MagicMock()
+
+    # Call the function to create and push tags
+    config = {"git_branch": "main"}
+    git_push(repo, config)
+
+    # Ensure 'data-previous' tag is not created
+    for call in repo.create_tag.mock_calls:
+        assert (
+            call.args[0] != "data-previous"
+        ), f"Unexpected call with tag 'data-previous': {call}"
+
+    # Ensure the branch is pushed
+    repo.git.push.assert_any_call("origin", config["git_branch"])
