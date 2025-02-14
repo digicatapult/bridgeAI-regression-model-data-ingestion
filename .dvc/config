@@ -2,5 +2,5 @@
     url = s3://bridgeai-dvc-remote
     endpointurl = https://bridgeai-dvc-remote.s3.eu-west-2.amazonaws.com
     access_key_id = ""
-    secret_access_key = password
+    secret_access_key = 6KJYTkvq6s4p+omO7rxYIp62TaNvbTYPVxloVSRO
     region = eu-west-2
