@@ -1,6 +1,6 @@
 ['remote "regression-model-remote"']
     url = s3://bridgeai-dvc-remote
     endpointurl = https://bridgeai-dvc-remote.s3.eu-west-2.amazonaws.com
-    access_key_id = ASIAQ3EGP22X7BXFTM5Y
-    secret_access_key = u52LvYQ9TKSe8ospBxSJdW8gBcvHQJYyo9wfSDs6
+    access_key_id = ASIAQ3EGP22XTNH5LDVJ
+    secret_access_key = 8DcODFSgYsav0Wn5kIA0ghEq8Hqx9ZW/VituvYhH
     region = eu-west-2
